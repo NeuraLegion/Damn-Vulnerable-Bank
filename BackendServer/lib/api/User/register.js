@@ -28,7 +28,9 @@ router.post('/', decryptRequest, (req, res) => {
     }).then((data) => {
         if(data == "") {
             Model.users.findOne({
-                account_number: account_number
+                where: {
+                    account_number
+                }
             }).then((data) => {
                 // Regenerates new account number if account number exists
                 if(data) {
