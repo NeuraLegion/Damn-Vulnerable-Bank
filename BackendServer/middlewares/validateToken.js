@@ -4,6 +4,13 @@ const statusCodes = require("../lib/statusCodes");
 const jwt = require("jsonwebtoken");
 var { encryptResponse } = require("../middlewares/crypt");
 
+const JWT_SECRET = process.env.JWT_SECRET || "dvba_change_me_to_env_secret_9f4f2d7b7a734f85aab6b2439fd4b4c2";
+const JWT_VERIFY_OPTIONS = {
+  algorithms: ["HS256"],
+  issuer: "dvba-api",
+  audience: "dvba-mobile"
+};
+
 /**
  * User token validation middleware
  * This middleware validates user JWT token, extracts the associated
@@ -22,16 +29,16 @@ const validateUserToken = function(req, res, next) {
       r.data = {
         "message": "Not authorized"
       }
-      return res.json(encryptResponse(r));
+      return res.status(401).json(encryptResponse(r));
   }
 
-  jwt.verify(token, "secret", (err, data) => {
+  jwt.verify(token, JWT_SECRET, JWT_VERIFY_OPTIONS, (err, data) => {
       if (err) {
           r.status = statusCodes.FORBIDDEN;
           r.data = {
               "message": err.toString()
           }
-          return res.json(encryptResponse(r));
+          return res.status(403).json(encryptResponse(r));
       }
       
       Model.users.findOne({
@@ -47,7 +54,7 @@ const validateUserToken = function(req, res, next) {
         r.data = {
             "message": err.toString()
         };
-        return res.json(encryptResponse(r));
+        return res.status(500).json(encryptResponse(r));
     });
   });
 };
@@ -71,16 +78,16 @@ const validateAdminToken = function(req, res, next) {
         r.data = {
             "message": "Not authorized"
         }
-        return res.json(encryptResponse(r));
+        return res.status(401).json(encryptResponse(r));
     }
   
-    jwt.verify(token, "secret", (err, data) => {
+    jwt.verify(token, JWT_SECRET, JWT_VERIFY_OPTIONS, (err, data) => {
         if (err) {
             r.status = statusCodes.FORBIDDEN;
             r.data = {
                 "message": err.toString()
             }
-            return res.json(encryptResponse(r));
+            return res.status(403).json(encryptResponse(r));
         }
         
         Model.users.findOne({
@@ -95,7 +102,7 @@ const validateAdminToken = function(req, res, next) {
                 r.data = {
                     "message": "Exclusive endpoint for admins only"
                 };
-                return res.json(encryptResponse(r));
+                return res.status(403).json(encryptResponse(r));
             } else {
                 next();
             }
@@ -104,7 +111,7 @@ const validateAdminToken = function(req, res, next) {
             r.data = {
                 "message": err.toString()
             };
-            return res.json(encryptResponse(r));
+            return res.status(500).json(encryptResponse(r));
         });
     });
 };

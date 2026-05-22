@@ -6,6 +6,14 @@ var statusCodes = require('../../statusCodes');
 var { encryptResponse, decryptRequest } = require("../../../middlewares/crypt");
 const jwt = require("jsonwebtoken");
 
+const JWT_SECRET = process.env.JWT_SECRET || "dvba_change_me_to_env_secret_9f4f2d7b7a734f85aab6b2439fd4b4c2";
+const JWT_OPTIONS = {
+    algorithm: "HS256",
+    expiresIn: "15m",
+    issuer: "dvba-api",
+    audience: "dvba-mobile"
+};
+
 /**
  * Login route
  * This endpoint allows the user to login
@@ -30,7 +38,7 @@ router.post('/', decryptRequest, (req, res) => {
             const accessToken = jwt.sign({
                 username: data.username,
                 is_admin: data.is_admin
-            }, "secret");
+            }, JWT_SECRET, JWT_OPTIONS);
             r.status = statusCodes.SUCCESS;
             r.data = {
                 "accessToken": accessToken
